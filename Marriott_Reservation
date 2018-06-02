@@ -1,0 +1,114 @@
+Option Explicit
+
+Sub import_dat3()
+
+Application.ScreenUpdating = False
+
+Dim fn As String
+Dim rng As Range
+Dim cRng As Range
+Dim i As Long
+Dim B As String
+Dim wbk1 As Workbook
+Dim wbk2 As Workbook
+Dim dRng As Range
+Dim cRng2 As Range
+Dim LR As Long, LC As Long
+
+'Clear the Input Sheet in case there is anything left over from the last time report was run
+
+Workbooks("Marriott Coding Tool.xlsm").Activate
+Sheets("Input2").UsedRange.ClearContents
+Sheets("Raw Data2").UsedRange.ClearContents
+
+'This prompts us select a rate offer details report, and then stores file name as fn variable
+
+fn = Application.GetOpenFilename("All Files,", 1, "Select Dat3", , False)
+
+     If fn = "False" Then
+  
+            MsgBox "No Report Was Selected..."
+    
+            Exit Sub
+        End If
+
+'The fn variable has to be stored somewhere, so we put that in "A2" in the "Legend" sheet
+
+Worksheets("Legend").Range("A2") = fn
+
+    
+Set wbk1 = Workbooks("Marriott Coding Tool.xlsm")
+B = Worksheets("Legend").Range("A2").Text
+Workbooks.OpenText Filename:=B
+
+Set wbk2 = ActiveWorkbook
+'Worksheets("Sheet1").Activate
+
+
+
+
+
+Range("A1").Select
+LR = ActiveCell.End(xlDown).Row
+LC = ActiveCell.End(xlToRight).Column
+
+Set dRng = Range(ActiveCell, Cells(LR, LC))
+
+Application.CutCopyMode = False
+dRng.RemoveDuplicates Columns:=24, Header:= _
+    xlYes
+
+
+
+
+
+
+
+With ActiveSheet
+    .Columns("X:X").Cut
+    .Columns("A:A").Insert Shift:=xlToRight
+End With
+
+
+
+
+
+
+
+'This is a more dynamic Copy Range
+
+Set cRng = Range(Range("A1").End(xlToRight), Range("A1").End(xlDown))
+
+cRng.Copy
+
+wbk1.Activate
+
+Worksheets("Input2").Activate
+
+ActiveSheet.Paste Destination:=Worksheets("Input2").Range("A1")
+
+wbk2.Saved = True ' marks as saved but doesn't save
+
+Application.DisplayAlerts = False
+wbk2.Close SaveChanges:=False
+Application.DisplayAlerts = True
+
+'Now we cut the Rate program column and set it as the left-most column
+'to turn this in to a giant V-Lookup table
+
+
+
+Application.CutCopyMode = False
+
+Worksheets("Input2").Activate
+
+Set cRng2 = Range(Range("A1").End(xlToRight), Range("A1").End(xlDown))
+
+cRng2.Copy
+
+Worksheets("Raw Data2").Activate
+
+ActiveSheet.Paste Destination:=Worksheets("Raw Data2").Range("A1")
+
+
+End Sub
